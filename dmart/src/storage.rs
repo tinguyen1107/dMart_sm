@@ -1,5 +1,5 @@
 use super::*;
-use near_sdk::json_types::{ValidAccountId, U128};
+use near_sdk::json_types::U128;
 use near_sdk::serde::Serialize;
 use near_sdk::utils::assert_one_yocto;
 use std::convert::TryInto;
@@ -25,19 +25,19 @@ pub struct AccountStorageBalance {
 }
 
 pub trait StorageManager {
-    fn storage_deposit(&mut self, account_id: Option<ValidAccountId>) -> AccountStorageBalance;
+    fn storage_deposit(&mut self, account_id: Option<AccountId>) -> AccountStorageBalance;
 
     fn storage_withdraw(&mut self, amount: Option<U128>) -> AccountStorageBalance;
 
     fn storage_minimum_balance(&self) -> U128;
 
-    fn storage_balance_of(&self, account_id: ValidAccountId) -> AccountStorageBalance;
+    fn storage_balance_of(&self, account_id: AccountId) -> AccountStorageBalance;
 }
 
 #[near_bindgen]
 impl StorageManager for Contract {
     #[payable]
-    fn storage_deposit(&mut self, account_id: Option<ValidAccountId>) -> AccountStorageBalance {
+    fn storage_deposit(&mut self, account_id: Option<AccountId>) -> AccountStorageBalance {
         let amount = env::attached_deposit();
         let account_id = account_id
             .map(|a| a.into())
@@ -66,7 +66,7 @@ impl StorageManager for Contract {
     fn storage_withdraw(&mut self, amount: Option<U128>) -> AccountStorageBalance {
         assert_one_yocto();
         let account_id = env::predecessor_account_id();
-        let storage_balance = self.storage_balance_of((account_id.as_str()).try_into().unwrap());
+        let storage_balance = self.storage_balance_of(account_id.clone());
         let amount: Balance = amount.unwrap_or(storage_balance.available).into();
         if amount > storage_balance.available.0 {
             env::panic(b"Requested storage balance withdrawal amount is larger than available");
@@ -83,8 +83,8 @@ impl StorageManager for Contract {
         (Balance::from(MIN_STORAGE_SIZE) * STORAGE_PRICE_PER_BYTE).into()
     }
 
-    fn storage_balance_of(&self, account_id: ValidAccountId) -> AccountStorageBalance {
-        if let Some(storage_account) = self.storage_accounts.get(account_id.as_ref()) {
+    fn storage_balance_of(&self, account_id: AccountId) -> AccountStorageBalance {
+        if let Some(storage_account) = self.storage_accounts.get(&account_id) {
             AccountStorageBalance {
                 total: storage_account.balance.into(),
                 available: (storage_account.balance

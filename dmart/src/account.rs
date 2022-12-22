@@ -45,8 +45,8 @@ impl Contract {
         self.finalize_storage_update(storage_update);
     }
 
-    pub fn get_account(&self, account_id: ValidAccountId) -> Option<AccountStats> {
-        self.internal_get_account_optional(account_id.as_ref())
+    pub fn get_account(&self, account_id: AccountId) -> Option<AccountStats> {
+        self.internal_get_account_optional(&account_id)
             .map(|a| a.into())
     }
 

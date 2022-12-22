@@ -77,7 +77,7 @@ NFT_CTX_ID=
 
 #################################################################################
 
-while getopts :c-:a-:n-: flag
+while getopts :m-:n-: flag
 do
   case "${flag}" in
     -)
@@ -106,8 +106,8 @@ do
       val="${!OPTIND}"
       Handle_received_value $val
       NEW_DMART=$new
-      BUILD_MART=$build
-      DEPLOY_MART=$deploy
+      BUILD_DMART=$build
+      DEPLOY_DMART=$deploy
       ;;
     n)
       val="${!OPTIND}"
@@ -215,9 +215,9 @@ then
   #############################
   if [ $NEW_DMART -eq 1 ]
   then
-    near call $DMART_CTX_ID new '{"ft_contract": "'$NFT_CTX_ID'"}' --accountId $OWNER_ACCOUNT_ID
+    near call $DMART_CTX_ID new '{"nft_contract": "'$NFT_CTX_ID'"}' --accountId $OWNER_ACCOUNT_ID
   else
-    near call $DMART_CTX_ID set_ft_contract '{"ft_contract": "'$NFT_CTX_ID'"}' --accountId $DMART_CTX_ID
+    near call $DMART_CTX_ID set_nft_contract '{"nft_contract": "'$NFT_CTX_ID'"}' --accountId $DMART_CTX_ID
   fi
 else
   #############################
@@ -226,7 +226,7 @@ else
   if [ $NEW_DMART -eq 1 ]
   then
     near call $NFT_CTX_ID set_role '{"account_id": "'$DMART_CTX_ID'"}' --accountId $OWNER_ACCOUNT_ID
-    near call $DMART_CTX_ID new '{"ft_contract": "'$NFT_CTX_ID'"}' --accountId $OWNER_ACCOUNT_ID
+    near call $DMART_CTX_ID new '{"nft_contract": "'$NFT_CTX_ID'"}' --accountId $OWNER_ACCOUNT_ID
   fi
 fi
 
