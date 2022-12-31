@@ -33,6 +33,7 @@ pub struct Contract {
     roles: LookupMap<AccountId, String>,
     tokens: NonFungibleToken,
     metadata: LazyOption<NFTContractMetadata>,
+    token_ids: UnorderedSet<TokenId>,
 }
 
 #[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize)]
@@ -52,6 +53,7 @@ enum StorageKey {
     TokenMetadata,
     Enumeration,
     Approval,
+    TokenIds,
 }
 
 #[near_bindgen]
@@ -88,6 +90,7 @@ impl Contract {
                 Some(StorageKey::Approval),
             ),
             metadata: LazyOption::new(StorageKey::Metadata, Some(&metadata)),
+            token_ids: UnorderedSet::new(StorageKey::TokenIds),
         }
     }
 
@@ -168,6 +171,13 @@ impl Contract {
             .unwrap()
             .get(&token_id.to_string())
             .unwrap()
+    }
+
+    pub fn get_nfts(&self) -> Vec<TokenMetadata> {
+        self.token_ids
+            .iter()
+            .map(|id| self.token_metadata(id))
+            .collect()
     }
 }
 

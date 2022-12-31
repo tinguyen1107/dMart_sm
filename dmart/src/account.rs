@@ -12,6 +12,7 @@ pub struct Account {
 pub struct AccountStats {
     pub avatar: String,
     pub thumbnail: String,
+    pub nfts_id: Vec<NftId>,
 }
 
 impl From<Account> for AccountStats {
@@ -19,6 +20,7 @@ impl From<Account> for AccountStats {
         Self {
             avatar: account.avatar,
             thumbnail: account.thumbnail,
+            nfts_id: vec![],
         }
     }
 }
@@ -46,8 +48,19 @@ impl Contract {
     }
 
     pub fn get_account(&self, account_id: AccountId) -> Option<AccountStats> {
-        self.internal_get_account_optional(&account_id)
-            .map(|a| a.into())
+        let account_stats: Option<AccountStats> = self
+            .internal_get_account_optional(&account_id)
+            .map(|a| a.into());
+        if let Some(mut account_stats_unwrapped) = account_stats {
+            account_stats_unwrapped.nfts_id =
+                if let Some(user_nfts) = self.user_nfts.get(&account_id) {
+                    user_nfts.to_vec()
+                } else {
+                    vec![]
+                };
+            return Some(account_stats_unwrapped);
+        }
+        None
     }
 
     pub fn get_accounts(&self, from_index: u64, limit: u64) -> Vec<(AccountId, AccountStats)> {

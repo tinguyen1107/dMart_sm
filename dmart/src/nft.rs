@@ -2,8 +2,7 @@ use super::*;
 use near_sdk::serde_json::json;
 use near_sdk::{ext_contract, AccountId, Gas, PromiseResult};
 
-const DEFAULT_GAS_FEE: Gas = Gas(20_000_000_000_000);
-
+const DEFAULT_GAS_FEE: Gas = 20_000_000_000_000;
 #[ext_contract(ext_self)]
 pub trait ExtContract {
     fn on_minted_nft(&mut self, owner_id: AccountId, nft_id: String) -> bool;
@@ -73,7 +72,7 @@ impl Contract {
 
         return Promise::new(self.nft_contract.clone())
             .function_call(
-                "nft_mint".to_string(),
+                b"nft_mint".to_vec(),
                 json!({
                     "token_id": token_id,
                     "receiver_id": receiver_id,
@@ -90,13 +89,12 @@ impl Contract {
                 20_000_000_000_000_000_000_000,
                 DEFAULT_GAS_FEE,
             )
-            .then(Self::ext(env::current_account_id()).on_minted_nft(receiver_id, token_id));
-        // .on_minted_nft(
-        //     receiver_id,
-        //     token_id,
-        //     // &env::current_account_id(),
-        //     // 0,
-        //     // DEFAULT_GAS_FEE,
-        // );
+            .then(ext_self::on_minted_nft(
+                receiver_id,
+                token_id,
+                &env::current_account_id(),
+                0,
+                DEFAULT_GAS_FEE,
+            ));
     }
 }

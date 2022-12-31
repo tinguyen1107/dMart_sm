@@ -64,4 +64,7 @@ impl Contract {
         };
         this
     }
+    pub fn test(&self) -> String {
+        "tinguyen".to_string()
+    }
 }
