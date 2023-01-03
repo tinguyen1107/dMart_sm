@@ -2,8 +2,10 @@ use crate::*;
 use near_sdk::BorshStorageKey;
 
 #[derive(BorshSerialize, BorshStorageKey)]
-enum StorageKey {
-    Roles,
+pub(crate) enum StorageKey {
+    StorageAccount,
+    Accounts,
+
     NonFungibleToken,
     Metadata,
     TokenMetadata,
