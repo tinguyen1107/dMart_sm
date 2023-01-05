@@ -6,6 +6,10 @@ pub(crate) enum StorageKey {
     StorageAccount,
     Accounts,
 
+    Orders,
+    OrderByNft,
+    Marketplace,
+
     NonFungibleToken,
     Metadata,
     TokenMetadata,

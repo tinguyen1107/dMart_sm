@@ -118,6 +118,13 @@ impl StorageAccount {
     }
 }
 
+#[near_bindgen]
+impl Contract {
+    pub fn is_registered(&self, account_id: AccountId) -> bool {
+        self.storage_accounts.get(&account_id).is_some()
+    }
+}
+
 impl Contract {
     pub(crate) fn new_storage_update(&mut self, account_id: AccountId) -> StorageUpdate {
         let storage_account = self

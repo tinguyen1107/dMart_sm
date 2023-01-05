@@ -14,6 +14,7 @@ pub use crate::account::*;
 pub use crate::constant::*;
 pub use crate::internal_account::*;
 pub use crate::nft::*;
+pub use crate::order::*;
 pub use crate::storage::*;
 pub use crate::storage_key::*;
 pub use crate::validator::*;
@@ -22,6 +23,7 @@ mod account;
 mod constant;
 mod internal_account;
 mod nft;
+mod order;
 mod storage;
 mod storage_key;
 mod validator;
@@ -38,13 +40,10 @@ pub struct Contract {
     pub storage_account_in_bytes: StorageUsage,
 
     pub accounts: UnorderedMap<AccountId, Account>,
-}
 
-#[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize)]
-#[serde(crate = "near_sdk::serde")]
-pub struct DMartToken {
-    token_id: TokenId,
-    metadata: TokenMetadata,
+    pub orders: LookupMap<OrderId, Order>,
+    pub order_by_nft: LookupMap<TokenId, OrderId>,
+    pub marketplace: UnorderedSet<OrderId>,
 }
 
 #[near_bindgen]
@@ -84,6 +83,10 @@ impl Contract {
             storage_account_in_bytes: 0,
 
             accounts: UnorderedMap::new(StorageKey::Accounts),
+
+            orders: LookupMap::new(StorageKey::Orders),
+            order_by_nft: LookupMap::new(StorageKey::OrderByNft),
+            marketplace: UnorderedSet::new(StorageKey::Marketplace),
         }
     }
 }
