@@ -15,6 +15,7 @@ pub struct Account {
 pub struct AccountStats {
     pub account_info: String,
 
+    pub favourite_nfts: Vec<DMartToken>,
     pub num_followers: u64,
     pub num_following: u64,
     pub num_nfts: u64,
@@ -25,6 +26,7 @@ impl From<Account> for AccountStats {
         Self {
             account_info: account.account_info,
 
+            favourite_nfts: vec![],
             num_followers: account.followers.len(),
             num_following: account.following.len(),
             num_nfts: 0,
@@ -56,12 +58,20 @@ impl Contract {
     }
 
     pub fn get_account(&self, account_id: AccountId) -> Option<AccountStats> {
-        let account_stats: Option<AccountStats> = self
-            .internal_get_account_optional(&account_id)
-            .map(|a| a.into());
-        if let Some(mut account_stats_unwrapped) = account_stats {
-            account_stats_unwrapped.num_nfts = self.get_num_nfts(&account_id);
-            return Some(account_stats_unwrapped);
+        let account: Option<Account> = self.internal_get_account_optional(&account_id);
+        if let Some(account_unwrapped) = account {
+            let mut account_stats: AccountStats = self.internal_get_account(&account_id).into();
+            account_stats.num_nfts = self.get_num_nfts(&account_id);
+            account_stats.favourite_nfts = account_unwrapped
+                .bookmarks
+                .iter()
+                .map(|id| DMartToken {
+                    token_id: id.clone(),
+                    owner_id: self.tokens.owner_by_id.get(&id).unwrap(),
+                    metadata: self.token_metadata(id.to_string()),
+                })
+                .collect();
+            return Some(account_stats);
         }
         None
     }
@@ -92,5 +102,49 @@ impl Contract {
                 account_stats
             })
             .collect()
+    }
+
+    pub fn add_bookmark(&mut self, nft_id: TokenId) {
+        let account_id = env::predecessor_account_id();
+        let storage_update = self.new_storage_update(account_id.clone());
+
+        let mut account = self.internal_get_account(&account_id);
+        account.bookmarks.push(nft_id);
+        self.internal_set_account(&account_id, account);
+
+        self.finalize_storage_update(storage_update);
+    }
+
+    pub fn remove_bookmark(&mut self, nft_id: TokenId) {
+        let account_id = env::predecessor_account_id();
+        let storage_update = self.new_storage_update(account_id.clone());
+
+        let mut account = self.internal_get_account(&account_id);
+        let index = account
+            .bookmarks
+            .iter()
+            .position(|x| *x == nft_id)
+            .expect("NFT not found");
+        account.bookmarks.remove(index);
+        self.internal_set_account(&account_id, account);
+
+        self.finalize_storage_update(storage_update);
+    }
+
+    pub fn get_bookmarks(&self, account_id: AccountId) -> Vec<DMartToken> {
+        let account = self.internal_get_account_optional(&account_id);
+        if let Some(account) = account {
+            account
+                .bookmarks
+                .iter()
+                .map(|id| DMartToken {
+                    token_id: id.clone(),
+                    owner_id: self.tokens.owner_by_id.get(&id).unwrap(),
+                    metadata: self.token_metadata(id.to_string()),
+                })
+                .collect()
+        } else {
+            vec![]
+        }
     }
 }

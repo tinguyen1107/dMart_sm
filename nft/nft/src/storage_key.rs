@@ -8,6 +8,8 @@ pub(crate) enum StorageKey {
 
     Orders,
     OrderByNft,
+    OrderByAccount,
+    OrderByAccountInner { id: String },
     Marketplace,
 
     NonFungibleToken,

@@ -5,6 +5,7 @@ use near_contract_standards::non_fungible_token::NonFungibleToken;
 use near_contract_standards::non_fungible_token::{Token, TokenId};
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::collections::{LazyOption, LookupMap, UnorderedMap, UnorderedSet, Vector};
+use near_sdk::json_types::{ValidAccountId, U128, U64};
 use near_sdk::serde::{Deserialize, Serialize};
 use near_sdk::{
     env, near_bindgen, AccountId, Balance, PanicOnDefault, Promise, PromiseOrValue, StorageUsage,
@@ -43,6 +44,7 @@ pub struct Contract {
 
     pub orders: LookupMap<OrderId, Order>,
     pub order_by_nft: LookupMap<TokenId, OrderId>,
+    pub order_by_user: LookupMap<AccountId, UnorderedSet<OrderId>>,
     pub marketplace: UnorderedSet<OrderId>,
 }
 
@@ -86,6 +88,7 @@ impl Contract {
 
             orders: LookupMap::new(StorageKey::Orders),
             order_by_nft: LookupMap::new(StorageKey::OrderByNft),
+            order_by_user: LookupMap::new(StorageKey::OrderByAccount),
             marketplace: UnorderedSet::new(StorageKey::Marketplace),
         }
     }

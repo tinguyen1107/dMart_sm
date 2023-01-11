@@ -3,9 +3,9 @@ use crate::*;
 #[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize)]
 #[serde(crate = "near_sdk::serde")]
 pub struct DMartToken {
-    token_id: TokenId,
-    owner_id: AccountId,
-    metadata: TokenMetadata,
+    pub token_id: TokenId,
+    pub owner_id: AccountId,
+    pub metadata: TokenMetadata,
 }
 
 #[near_bindgen]
